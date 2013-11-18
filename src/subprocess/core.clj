@@ -1,5 +1,6 @@
 (ns subprocess.core
-  (:require [clojure.java.io :as io])
+  (:require [clojure.java.io :as io]
+            [subprocess.util :as util])
   (:gen-class))
 
 
@@ -39,15 +40,14 @@
   (let [runtime (Runtime/getRuntime)]
     (.exec runtime cmd)))
 
-(defn make-entry
+(defn parse-packet
   "Transform received vector to map."
-  [[_ _ dir iface srcaddr srcport dstaddr dstport size]]
+  [[_ _ _ _ dir iface srcaddr srcport dstaddr dstport size]]
   (let [main-host (if (= dir "in") srcaddr dstaddr)]
-    (Thread/sleep 100)
     (when-not (or (= main-host "0.0.0.0") (.endsWith main-host ".255"))
       {:key main-host :data {:srcadrr srcaddr :dstaddr dstaddr :srcport srcport :dstport dstport
                              :size (Integer/parseInt size) :direction (if (= dir "in") "out" "in")}})))
-(defn update-entry
+(defn update-data
   "Agent update method"
   [value entry]
   (let [data (:data entry)
@@ -58,6 +58,7 @@
       (update-in value [host dir] (partial + n))
       (assoc value host {:in 0 :out 0 :speed-in 0 :speed-out 0}))))
 
+;; TODO: implement as lazy-seq?
 (defn read-packet
   [reader]
   (let [line (.readLine reader)]
@@ -67,17 +68,17 @@
 (defn collector
   "Runnable that read packets from executed command and parses it."
   []
-  (binding [*command* (System/getProperty "subprocess.command" "cat pflog.txt")]
-    (let [proc    (run-command *command*)
-          reader  (io/reader (.getInputStream proc))]
-      (loop []
-        (let [result (read-packet reader)]
-          (when (seq result)
-            (let [entry (make-entry (drop 2 result))]
-              (when entry
-                (reset! last-packet entry)
-                (send hosts-data update-entry entry))))
-        (recur))))))
+  (let [command (System/getProperty "subprocess.command" "cat pflog.txt")
+        proc    (run-command command)
+        reader  (io/reader (.getInputStream proc))]
+    (loop []
+      (let [rawpacket (read-packet reader)]
+        (when (seq rawpacket)
+          (let [packet (parse-packet rawpacket)]
+            (when packet
+              (reset! last-packet packet)
+              (send hosts-data update-data packet))))
+      (recur)))))
 
 (defn start-collector []
   "Start collector thread and return it."
@@ -107,7 +108,7 @@
               (send hosts-speed assoc-in [host :in] (:in data))
               (send hosts-speed assoc-in [host :out] (:out data))))))
 
-      (Thread/sleep (* sleep-time 1000))
+      (util/sleep (* sleep-time 1000))
       (recur))))
 
 (defn start-speedcalculator []
