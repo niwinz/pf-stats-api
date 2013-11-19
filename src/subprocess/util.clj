@@ -8,3 +8,11 @@
 
 (defn sleep [^Integer msec]
   (Thread/sleep msec))
+
+(defn system-property
+  [^String keyname & [default]]
+  (System/getProperty keyname default))
+
+(defn humanize-bytes
+  [^Integer bytesnumber]
+  (humanize.Humanize/binaryPrefix bytesnumber))

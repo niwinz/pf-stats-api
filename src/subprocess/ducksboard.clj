@@ -7,31 +7,50 @@
             [org.httpkit.client :as http])
   (:gen-class))
 
+;; TODO: logging instead of prints?
+
+(def ^:dynamic *token*)
+(def ^:dynamic *sleep-time*)
+
 (defn ip->hostname
   [^String ip]
   (let [addr (InetAddress/getByName (name ip))]
     (.getHostName addr)))
 
-(defn data->ducksboard-format
-  [data]
+(defn data->ducksboard
+  [data dir]
+  {:pre [(or (= dir :in) (= dir :out))]}
   (let [units   (* 1024 1024)
         entries (for [[ip ipdata] (seq data)]
                   {:name (ip->hostname ip)
-                   :values [(quot (:in ipdata) units)]})]
-                            ;; (quot (:out ipdata) units)]})]})]]
-    {:value {:board entries}}))
+                   :values [(dir ipdata)
+                            (util/humanize-bytes (dir ipdata))]})
+        sort-fn (fn [x] (-> x (:values) (get 0)))]
+    {:value {:board (take 10 (reverse (sort-by sort-fn entries)))}}))
 
 (defn ducksboard-updateloop
   []
-  (let [token     (System/getProperty "subprocess.token" "")
-        options   {:basic-auth [token "unused"]}]
-    (loop []
-      (let [data (deref core/hosts-data)
-            data (data->ducksboard-format data)]
-        (http/post "https://push.ducksboard.com/v/266990"
-                   (assoc options :body (json/write-str data)))
-        (util/sleep 15000))
-      (recur))))
+  (binding [*token*       (util/system-property "ducksboard.token")
+            *sleep-time*  (util/system-property "ducksboard.interval" "60000")]
+    (if (nil? *token*)
+      (println "Ducksboard token is not set, disabling service.")
+      (let [options {:basic-auth [*token* "unused"]}]
+        (println (format "Ducksboard service enabled with interval of %s msecs." *sleep-time*))
+        (loop []
+          (let [data      (deref core/hosts-data)
+                data-in   (data->ducksboard data :in)
+                data-out  (data->ducksboard data :out)]
+
+            ;; (http/post "https://push.ducksboard.com/v/266990"
+            ;;            (assoc options :body (json/write-str data-in)))
+            ;; (http/post "https://push.ducksboard.com/v/268310"
+            ;;            (assoc options :body (json/write-str data-out)))
+            (http/post "https://push.ducksboard.com/v/268401"
+                       (assoc options :body (json/write-str data-in)))
+            (http/post "https://push.ducksboard.com/v/268402"
+                       (assoc options :body (json/write-str data-out)))
+            (util/sleep (Integer/parseInt *sleep-time*)))
+          (recur))))))
 
 (defn start-ducksboard
   []
