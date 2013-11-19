@@ -1,6 +1,6 @@
 (ns subprocess.ducksboard
   (:import java.net.InetAddress)
-  (:require [subprocess.core :as core]
+  (:require [subprocess.packetfilter :as pf]
             [subprocess.util :as util]
             [clojure.pprint :refer [pprint]]
             [clojure.data.json :as json]
@@ -28,7 +28,7 @@
         sort-fn (fn [x] (-> x (:values) (get 0)))]
     {:value {:board (take 10 (reverse (sort-by sort-fn entries)))}}))
 
-(defn ducksboard-updateloop
+(defn do-ducksboard-update
   []
   (binding [*token*       (util/system-property "ducksboard.token")
             *sleep-time*  (util/system-property "ducksboard.interval" "60000")]
@@ -37,7 +37,7 @@
       (let [options {:basic-auth [*token* "unused"]}]
         (println (format "Ducksboard service enabled with interval of %s msecs." *sleep-time*))
         (loop []
-          (let [data      (deref core/hosts-data)
+          (let [data      (deref pf/hosts-data)
                 data-in   (data->ducksboard data :in)
                 data-out  (data->ducksboard data :out)]
 
@@ -54,6 +54,6 @@
 
 (defn start-ducksboard
   []
-  (let [t (Thread. ducksboard-updateloop)]
+  (let [t (Thread. do-ducksboard-update)]
     (.start t)
     t))

@@ -1,13 +1,12 @@
-(ns subprocess.http
+(ns subprocess.httpserver
   (:require [compojure.core :as cc]
             [compojure.route :as route]
             [compojure.handler :as handler]
             [org.httpkit.server :as httpkit]
             [clojure.data.json :as json]
             [clojure.java.io :as io]
-            [subprocess.core :as main]
-            [subprocess.util :as util]
-            [subprocess.ducksboard :as dk])
+            [subprocess.packetfilter :as pf]
+            [subprocess.util :as util])
   (:gen-class))
 
 (def cors-headers {"Access-Control-Allow-Origin" "*"
@@ -26,7 +25,7 @@
 (defn stats
   [request]
   (let [headers {"content-type" "application/json"}
-        body    (json/write-str @main/hosts-data)]
+        body    (json/write-str @pf/hosts-data)]
     (render body :headers headers :status 200)))
 
 (defn stats-sse
@@ -38,14 +37,14 @@
 
     (httpkit/with-channel request channel
       (httpkit/on-close channel (fn [status]
-                                  (remove-watch main/last-packet (keyword request-id))
+                                  (remove-watch pf/last-packet (keyword request-id))
                                   (println "channel closed, " status)))
 
       ;; Send initial message with headers
       (httpkit/send! channel {:headers headers :status 200 :body "event: packet"} false)
 
       ;; Attach watcher for streaming events
-      (add-watch main/last-packet (keyword request-id)
+      (add-watch pf/last-packet (keyword request-id)
                  (fn [_ _ _ packet]
                    (let [data (str "data:" (json/write-str packet) "\n\n")]
                      (httpkit/send! channel data false)))))))
@@ -63,15 +62,8 @@
   (route/resources "/static")
   (route/not-found "<h1>Page not found</h1>"))
 
-(def main-handler (handler/api app))
-
-(defn -main
-  [& args]
-  ;; Start main process threads
-  (main/start-speedcalculator)
-  (main/start-collector)
-  (dk/start-ducksboard)
-
-  ;; Start http server
-  (println "Listening: http://localhost:9090/")
-  (httpkit/run-server #'main-handler {:port 9090}))
+(defn start-httpserver
+  []
+  (let [main-handler (handler/api app)]
+    (println "Listening: http://localhost:9090/")
+    (httpkit/run-server main-handler {:port 9090})))

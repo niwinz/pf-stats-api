@@ -1,4 +1,4 @@
-(ns subprocess.core
+(ns subprocess.packetfilter
   (:require [clojure.java.io :as io]
             [subprocess.util :as util])
   (:gen-class))
@@ -6,8 +6,7 @@
 
 ;; Global var containgin a command to exec
 ;; on the collector thread.
-(def ^:dynamic *command*)
-;; (def ^:dynamic *command* "tcpdump -n -e -ttt -i pflog0")
+;; (def ^:dynamic *command*)
 
 ;; Global agent that stores all
 ;; collected and parsed data.
@@ -58,17 +57,16 @@
       (update-in value [host dir] (partial + n))
       (assoc value host {:in 0 :out 0 :speed-in 0 :speed-out 0}))))
 
-;; TODO: implement as lazy-seq?
 (defn read-packet
   [reader]
   (let [line (.readLine reader)]
     (when line
       (re-find packet-pattern line))))
 
-(defn collector
+(defn do-packetfilter
   "Runnable that read packets from executed command and parses it."
   []
-  (let [command (System/getProperty "subprocess.command" "cat pflog.txt")
+  (let [command (util/system-property "subprocess.command" "cat pflog.txt")
         proc    (run-command command)
         reader  (io/reader (.getInputStream proc))]
     (loop []
@@ -80,17 +78,11 @@
               (send hosts-data update-data packet))))
       (recur)))))
 
-(defn start-collector []
-  "Start collector thread and return it."
-  (let [t (Thread. collector)]
-    (.start t)
-    t))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Speed calculator
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn speedcalculator
+(defn do-speedcalculator
   "Runnable that calculate speed over time of captured packets."
   []
   (let [sleep-time  1]
@@ -111,8 +103,10 @@
       (util/sleep (* sleep-time 1000))
       (recur))))
 
-(defn start-speedcalculator []
-  "Start speed calculator in one thread and returns it."
-  (let [t (Thread. speedcalculator)]
-    (.start t)
-    t))
+(defn start-packetfilter []
+  "Start collector thread and return it."
+  (let [t1 (Thread. do-packetfilter)
+        t2 (Thread. do-speedcalculator)]
+    (.start t1)
+    (.start t2)
+    [t1 t2]))
