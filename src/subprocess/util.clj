@@ -1,5 +1,6 @@
 (ns subprocess.util
   (:import java.util.UUID)
+  (:require [clojure.data.json :as json])
   (:gen-class))
 
 (defn random-uuid []
@@ -16,3 +17,11 @@
 (defn humanize-bytes
   [^Integer bytesnumber]
   (humanize.Humanize/binaryPrefix bytesnumber))
+
+(defn json-dumps
+  [data]
+  (json/write-str data))
+
+(defn json-loads
+  [data]
+  (json/read-str data :key-fn keyword))
