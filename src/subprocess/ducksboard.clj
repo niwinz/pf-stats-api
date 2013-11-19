@@ -32,25 +32,30 @@
   []
   (binding [*token*       (util/system-property "ducksboard.token")
             *sleep-time*  (util/system-property "ducksboard.interval" "60000")]
-    (if (nil? *token*)
-      (println "Ducksboard token is not set, disabling service.")
-      (let [options {:basic-auth [*token* "unused"]}]
-        (println (format "Ducksboard service enabled with interval of %s msecs." *sleep-time*))
-        (loop []
-          (let [data      (deref pf/hosts-data)
-                data-in   (data->ducksboard data :in)
-                data-out  (data->ducksboard data :out)]
+    (let [options {:basic-auth [*token* "unused"]}]
+      (loop []
+        (let [data      (deref pf/hosts-data)
+              data-in   (data->ducksboard data :in)
+              data-out  (data->ducksboard data :out)]
 
-            ;; (http/post "https://push.ducksboard.com/v/266990"
-            ;;            (assoc options :body (json/write-str data-in)))
-            ;; (http/post "https://push.ducksboard.com/v/268310"
-            ;;            (assoc options :body (json/write-str data-out)))
-            (http/post "https://push.ducksboard.com/v/268401"
-                       (assoc options :body (json/write-str data-in)))
-            (http/post "https://push.ducksboard.com/v/268402"
-                       (assoc options :body (json/write-str data-out)))
-            (util/sleep (Integer/parseInt *sleep-time*)))
-          (recur))))))
+          (util/sleep (Integer/parseInt *sleep-time*))
+
+          (if (nil? *token*)
+            (do
+              (println "Ducksboard token is not set, disabling service.")
+              (println :in (json/write-str data-in))
+              (println :out (json/write-str data-out)))
+
+            (do
+              ;; (http/post "https://push.ducksboard.com/v/266990"
+              ;;            (assoc options :body (json/write-str data-in)))
+              ;; (http/post "https://push.ducksboard.com/v/268310"
+              ;;            (assoc options :body (json/write-str data-out)))
+              (http/post "https://push.ducksboard.com/v/268401"
+                         (assoc options :body (json/write-str data-in)))
+              (http/post "https://push.ducksboard.com/v/268402"
+                         (assoc options :body (json/write-str data-out))))))
+        (recur)))))
 
 (defn start-ducksboard
   []
