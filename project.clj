@@ -10,6 +10,6 @@
                  [org.clojure/data.json "0.2.3"]
                  [ring/ring-jetty-adapter "1.2.1"]
                  [com.github.mfornos/humanize-slim "1.1.3"]]
-  :main ^:skip-aot subprocess.http
+  :main ^:skip-aot subprocess.main
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})
