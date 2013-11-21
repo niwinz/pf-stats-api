@@ -23,8 +23,7 @@
   (let [units   (* 1024 1024)
         entries (for [[ip ipdata] (seq data)]
                   {:name (ip->hostname ip)
-                   :values [(dir ipdata)
-                            (util/humanize-bytes (dir ipdata))]})
+                   :values [(dir ipdata)]})
         sort-fn (fn [x] (-> x (:values) (get 0)))]
     {:value {:board (take 10 (reverse (sort-by sort-fn entries)))}}))
 
@@ -47,13 +46,9 @@
               (println :out (json/write-str data-out)))
 
             (do
-              ;; (http/post "https://push.ducksboard.com/v/266990"
-              ;;            (assoc options :body (json/write-str data-in)))
-              ;; (http/post "https://push.ducksboard.com/v/268310"
-              ;;            (assoc options :body (json/write-str data-out)))
-              (http/post "https://push.ducksboard.com/v/268401"
+              (http/post "https://push.ducksboard.com/v/266990"
                          (assoc options :body (json/write-str data-in)))
-              (http/post "https://push.ducksboard.com/v/268402"
+              (http/post "https://push.ducksboard.com/v/268310"
                          (assoc options :body (json/write-str data-out))))))
         (recur)))))
 

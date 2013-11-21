@@ -9,7 +9,6 @@
                  [hiccup "1.0.4"]
                  [org.clojure/data.json "0.2.3"]
                  [ring/ring-jetty-adapter "1.2.1"]
-                 [com.github.mfornos/humanize-slim "1.1.3"]
                  [be.niwi/clj.jdbc "0.1.0-beta1"]]
   :main ^:skip-aot subprocess.main
   :target-path "target/%s"
