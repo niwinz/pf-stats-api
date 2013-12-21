@@ -1,7 +1,7 @@
-(ns subprocess.ducksboard
+(ns pfrt.ducksboard
   (:import java.net.InetAddress)
-  (:require [subprocess.packetfilter :as pf]
-            [subprocess.util :as util]
+  (:require [pfrt.packetfilter :as pf]
+            [pfrt.util :as util]
             [clojure.pprint :refer [pprint]]
             [clojure.data.json :as json]
             [org.httpkit.client :as http])

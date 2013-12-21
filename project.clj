@@ -9,7 +9,8 @@
                  [hiccup "1.0.4"]
                  [org.clojure/data.json "0.2.3"]
                  [ring/ring-jetty-adapter "1.2.1"]
-                 [be.niwi/clj.jdbc "0.1.0-beta1"]]
-  :main ^:skip-aot subprocess.main
+                 [be.niwi/clj.jdbc "0.1.0-beta4"]
+                 [org.clojure/algo.monads "0.1.4"]]
+  :main ^:skip-aot pfrt.main
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

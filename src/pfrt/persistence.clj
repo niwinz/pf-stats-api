@@ -1,6 +1,6 @@
-(ns subprocess.persistence
+(ns pfrt.persistence
   (:require [jdbc]
-            [subprocess.util :as util])
+            [pfrt.util :as util])
   (:gen-class))
 
 (def dbspec {:subprotocol "h2" :subname "file:p0rnstats.h2.db"})
