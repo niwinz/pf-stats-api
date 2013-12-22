@@ -12,7 +12,7 @@
                [purnam.angular :only [def.module def.filter
                                       def.factory def.controller]]))
 
-(def *remote-url* "/stats")
+(def *remote-url* "/stream/stats")
 (def *items* (atom {}))
 
 (defn- host->id
@@ -49,14 +49,14 @@
     temporal-node))
 
 (defn- main
-  "Main entry point."
   []
-  (let [on-receive  (fn [data & args]
-                      (let [dom-tbody ($ ".stats-container tbody")]
-                        (replace-with dom-tbody (render data))))
-        loopfn      (fn []
-                      (let [xhr ($/get *remote-url*)]
-                        (.done xhr on-receive)))]
-    (js/setInterval loopfn 1000)))
+  (let [event-source  (js/EventSource. *remote-url*)
+        on-receive    (fn [e]
+                        (let [dom-tbody ($ ".stats-container tbody")
+                              data      (.parse js/JSON (.-data e))]
+                          (replace-with dom-tbody (render data))))
+        on-error      (fn [e]
+                        (log "error" e))]
+    (.addEventListener event-source "message" on-receive)))
 
 (main)

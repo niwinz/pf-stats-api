@@ -11,7 +11,7 @@
   (GET "/stats" req
     (views/stats req))
 
-  (GET "/streap/packets" req
+  (GET "/stream/stats" req
     (views/stats-stream req))
 
   (resources "/static")
