@@ -47,7 +47,11 @@
         n    (:size data)]
     (if (contains? value host)
       (update-in value [host dir] (partial + n))
-      (assoc value host {:in 0 :out 0 :speed-in 0 :speed-out 0}))))
+      (assoc value host {:in 0
+                         :out 0
+                         :speed-in 0
+                         :speed-out 0
+                         :name (util/ip->hostname host)}))))
 
 (defn s-packet-reader
   "Runnable that read packets from executed command and parses it."

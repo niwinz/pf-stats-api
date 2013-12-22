@@ -29,7 +29,7 @@
         download-speed  (:speed-in data)
         upload-speed    (:speed-out data)]
     (node [:tr {:id (host->id host)}
-           [:td host]
+           [:td (:name data)]
            [:td (js/filesize downloaded)]
            [:td (js/filesize uploaded)]
            [:td (str (js/filesize download-speed) "/s")]

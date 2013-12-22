@@ -1,5 +1,6 @@
 (ns pfrt.util
-  (:import java.util.UUID)
+  (:import java.util.UUID
+           java.net.InetAddress)
   (:require [clojure.data.json :as json]
             [clojure.algo.monads :refer [domonad maybe-m]])
   (:gen-class))
@@ -15,10 +16,6 @@
   [^String keyname & [default]]
   (System/getProperty keyname default))
 
-;; (defn humanize-bytes
-;;   [^Integer bytesnumber]
-;;   (humanize.Humanize/binaryPrefix bytesnumber))
-;;
 (defn json-dumps
   [data]
   (json/write-str data))
@@ -33,3 +30,8 @@
   `(domonad maybe-m
      ~bindings
      (do ~@body)))
+
+(defn ip->hostname
+  [^String ip]
+  (let [addr (InetAddress/getByName (name ip))]
+    (.getHostName addr)))
