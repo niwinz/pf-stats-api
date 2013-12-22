@@ -3,11 +3,33 @@
     <head>
         <meta charset="utf-8" />
         <title>Pr0n Stars</title>
-        <link type="text/css" rel="stylesheet" media="all" src="/static/css/reset.css" />
-        <link type="text/css" rel="stylesheet" media="all" src="/static/css/main.css" />
+        <link type="text/css" rel="stylesheet" media="all" href="/static/css/reset.css" />
+        <link type="text/css" rel="stylesheet" media="all" href="/static/css/main.css" />
     </head>
     <body>
-        <script src="/static/js/knockout-3.0.0.js"></script>
+        <div class="wrapper">
+            <div class="container title-container">
+                <h1>Pr0n Stars</h1>
+            </div>
+            <div class="container table-container">
+                <table id="stats-container" class="stats-container">
+                    <thead>
+                        <tr>
+                            <td>Hostname</td>
+                            <td>Download</td>
+                            <td>Upload</td>
+                            <td>Download Speed</td>
+                            <td>Upload Speed</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <script src="/static/js/jquery.js"></script>
+        <script src="/static/js/filesize.min.js"></script>
         <script src="/static/js/main.js"></script>
     </body>
 </html>

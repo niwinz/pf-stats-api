@@ -2,3 +2,40 @@ body {
     font-family: monospace;
     font-size: 14px;
 }
+
+.wrapper {
+    margin: 0 auto;
+    width: 960px;
+}
+
+.container {
+    padding: 10px;
+}
+
+.stats-container {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #888;
+}
+
+
+.stats-container thead tr td {
+    font-weight: bold;
+    background-color: #333;
+    color: #eee;
+    cursor: pointer;
+    text-align: center;
+}
+
+.stats-container thead tr td {
+    padding: 2px;
+    border: 1px solid #ccc;
+}
+
+.stats-container tbody tr td {
+    padding: 2px;
+    border: 1px solid #ccc;
+}
+.stats-container tbody tr:hover td {
+    background-color: #eee;
+}
