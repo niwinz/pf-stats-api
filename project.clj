@@ -6,11 +6,12 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [http-kit "2.1.12"]
                  [compojure "1.1.6"]
-                 [hiccup "1.0.4"]
                  [org.clojure/data.json "0.2.3"]
                  [ring/ring-jetty-adapter "1.2.1"]
-                 [be.niwi/clj.jdbc "0.1.0-beta4"]
+                 ;; [hiccup "1.0.4"]
+                 ;; [be.niwi/clj.jdbc "0.1.0-beta4"]
                  [org.clojure/algo.monads "0.1.4"]
+                 [jarohen/nomad "0.6.0"]
 
                  ;; ClojureScript Dependencies
                  [org.clojure/clojurescript "0.0-2127"]

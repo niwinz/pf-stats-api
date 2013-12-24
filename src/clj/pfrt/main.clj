@@ -7,7 +7,6 @@
 
 (defn -main
   [& args]
-
   ;; Packet Filter Service Threads
   (service/start-service pf/s-speed-calculator)
   (service/start-service pf/s-packet-reader)

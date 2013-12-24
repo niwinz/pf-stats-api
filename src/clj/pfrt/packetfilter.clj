@@ -56,7 +56,7 @@
 (defn s-packet-reader
   "Runnable that read packets from executed command and parses it."
   []
-  (let [command     (util/system-property "pfrt.command" "cat pflog.txt")
+  (let [command     (-> (service/cfg) :cmd)
         proc        (run-command command)
         reader      (io/reader (.getInputStream proc))
         read-packet (fn []
@@ -66,7 +66,8 @@
                         (dosync
                           (send last-packet (fn [_ p] p) p)
                           (alter hosts-data update-data p))))]
-    (service/run-interval read-packet 100)))
+    (service/run-interval read-packet 
+                          (-> (service/cfg) :sleep))))
 
 (defn s-speed-calculator
   "Runnable that calculate speed over time of captured packets."

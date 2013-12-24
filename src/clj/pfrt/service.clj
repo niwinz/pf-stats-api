@@ -1,6 +1,8 @@
-(ns pfrt.service)
+(ns pfrt.service
+  (:require [nomad :refer [defconfig]]
+            [clojure.java.io :as io]))
 
-;; FIXME: change ns name to executor.
+(defconfig cfg (io/resource "config.edn"))
 
 (defn thread-sleep
   "Helper method for make sleep a current thread."
