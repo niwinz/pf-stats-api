@@ -21,6 +21,7 @@
   :target-path "target/%s"
   :source-paths ["src/clj" "src/cljs"]
   :plugins [[lein-cljsbuild "1.0.1"]]
+  :hooks [leiningen.cljsbuild]
   :profiles {:uberjar {:aot :all}}
   :cljsbuild {
     :builds [{
@@ -28,5 +29,5 @@
         :compiler {
           :output-to "resources/public/js/main.js"  ; default: target/cljsbuild-main.js
           :optimizations :whitespace
-          :externs ["resources/public/js/knockout-3.0.0.js"]
+          :externs ["resources/public/js/jquery.js"]
           :pretty-print true}}]})
