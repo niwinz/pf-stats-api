@@ -1,16 +1,11 @@
 (ns pfrt-js.core
-  (:use [purnam.cljs :only [aget-in aset-in]]
-        [jayq.util :only [log]]
-        [jayq.core :only [$ html replace-with append]])
-  (:require [dommy.utils :as utils]
-            [dommy.core :as dommy]
-            [clojure.data :refer [diff]]
+  (:use [purnam.cljs :only [aget-in aset-in]]           ;; required import (dependency)
+        [jayq.util :only [log]]                         ;; console.log wrapper
+        [jayq.core :only [$ html replace-with append]]) ;; dom manipulation
+  (:require [clojure.data :refer [diff]]
             [clojure.string :as str]
-            [purnam.types :as types])
-  (:use-macros [dommy.macros :only [node sel sel1]]
-               [purnam.js :only [obj arr ! def.n def*n def* do*n]]
-               [purnam.angular :only [def.module def.filter
-                                      def.factory def.controller]]))
+            [purnam.types :as types]                    ;; extend js types with ISequable
+            [crate.core :as crate]))                    ;; templating
 
 (def *remote-url* "/stream/stats")
 (def *items* (atom {}))
@@ -28,7 +23,7 @@
         uploaded        (:out data)
         download-speed  (:speed-in data)
         upload-speed    (:speed-out data)]
-    (node [:tr {:id (host->id host)}
+    (crate/html [:tr {:id (host->id host)}
            [:td (:name data)]
            [:td (js/filesize downloaded)]
            [:td (js/filesize uploaded)]

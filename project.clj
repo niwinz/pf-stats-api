@@ -15,7 +15,7 @@
                  ;; ClojureScript Dependencies
                  [org.clojure/clojurescript "0.0-2127"]
                  [im.chit/purnam "0.1.8"]
-                 [prismatic/dommy "0.1.1"]
+                 [crate "0.2.5"]
                  [jayq "2.5.0"]]
   :main ^:skip-aot pfrt.main
   :target-path "target/%s"
