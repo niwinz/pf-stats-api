@@ -12,6 +12,7 @@
                  ;; [be.niwi/clj.jdbc "0.1.0-beta4"]
                  [org.clojure/algo.monads "0.1.4"]
                  [jarohen/nomad "0.6.0"]
+                 [swiss-arrows "1.0.0"]
 
                  ;; ClojureScript Dependencies
                  [org.clojure/clojurescript "0.0-2127"]
