@@ -1,5 +1,5 @@
 (ns pfrt.web.core
-  (:require [pfrt.util :as util]))
+  (:require [pfrt.util.json :refer [json-dumps]]))
 
 (def cors-headers {"Access-Control-Allow-Origin" "*"
                    "Access-Control-Expose-Headers" "x-requested-with,content-type"})
@@ -28,6 +28,6 @@
 (defn render-json
   ([data] (render-json data 200))
   ([data status]
-   (render :body (util/json-dumps data)
+   (render :body (json-dumps data)
            :status status
            :headers {"content-type" "application/json"})))

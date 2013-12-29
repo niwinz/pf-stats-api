@@ -1,7 +1,8 @@
 (ns pfrt.pf
   (:require [clojure.java.io :as io]
-            [pfrt.core :refer [IComponentLifecycle]]
-            [pfrt.util :as util]
+            [pfrt.core.lifecycle :refer [ILifecycle]]
+            [pfrt.util.monad :refer [maybe]]
+            [pfrt.util :refer [ip->hostname]]
             [pfrt.executor :as executor])
   (:gen-class))
 
@@ -42,22 +43,22 @@
                          :out 0
                          :speed-in 0
                          :speed-out 0
-                         :name (util/ip->hostname host)}))))
+                         :name (ip->hostname host)}))))
 
 (defn s-packet-reader
   "Runnable that read packets from executed command and parses it."
   [config pfdata pflastpk]
-  (let [command     (-> (executor/cfg) :cmd)
+  (let [command     (-> config :cmd)
         proc        (run-command command)
         reader      (io/reader (.getInputStream proc))
         read-packet (fn []
-                      (util/maybe [raw-d (.readLine reader)
-                                   raw-p (re-find packet-pattern raw-d)
-                                   p     (parse-packet raw-p)]
+                      (maybe [raw-d (.readLine reader)
+                              raw-p (re-find packet-pattern raw-d)
+                              p     (parse-packet raw-p)]
                         (dosync
                           (send pflastpk (fn [_ p] p) p)
                           (alter pfdata update-data p))))]
-    (executor/run-interval read-packet (-> (executor/cfg) :sleep))))
+    (executor/run-interval read-packet (-> config :sleep))))
 
 (defn s-speed-calculator
   "Runnable that calculate speed over time of captured packets."
@@ -76,7 +77,7 @@
 (defrecord PacketFilter
   [reader-thread speedc-thread data speed lastpk]
 
-  IComponentLifecycle
+  ILifecycle
 
   (init [this system]
     (assoc system :pf this))

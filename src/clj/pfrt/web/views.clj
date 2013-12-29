@@ -1,8 +1,9 @@
 (ns pfrt.web.views
   (:require [clojure.java.io :as io]
             [org.httpkit.server :as hkit]
-            [pfrt.util :as util]
             [pfrt.executor :as executor]
+            [pfrt.util :refer [random-uuid]]
+            [pfrt.util.json :refer [json-dumps]]
             [pfrt.web.core :refer [render-json render-html cors-headers]])
   (:gen-class))
 
@@ -18,7 +19,7 @@
 (defn stats-stream
   [request]
   (println request)
-  (let [request-id  (util/random-uuid)
+  (let [request-id  (random-uuid)
         headers     (merge cors-headers
                            {"content-type" "text/event-stream"
                             "cache-control" "no-cache"})
@@ -31,7 +32,7 @@
       (let [worker  (fn []
                       (println ".")
                       (let [loopfn (fn []
-                                    (let [data (str "data: " (util/json-dumps @(:pfdata pfctx)) "\n\n")]
+                                    (let [data (str "data: " (json-dumps @(:pfdata pfctx)) "\n\n")]
                                       (hkit/send! channel data false)))]
                         (executor/run-interval loopfn 1000)
                         (println "CLOSE")))

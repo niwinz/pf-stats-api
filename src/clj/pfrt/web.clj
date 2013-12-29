@@ -2,14 +2,14 @@
   (:require [compojure.handler :as handler]
             [org.httpkit.server :as hkit]
             [pfrt.web.routes :refer [app]]
-            [pfrt.core :refer [IComponentLifecycle]]))
+            [pfrt.core.lifecycle :refer [ILifecycle]]))
 
 (defrecord Web
   [webserver app]
 
-  IComponentLifecycle
+  ILifecycle
 
-  (init [ths system]
+  (init [this system]
     (assoc system :web this))
 
   (start [this system]
