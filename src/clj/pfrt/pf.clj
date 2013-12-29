@@ -1,5 +1,6 @@
 (ns pfrt.pf
   (:require [clojure.java.io :as io]
+            [pfrt.core :refer [IComponentLifecycle]]
             [pfrt.util :as util]
             [pfrt.executor :as executor])
   (:gen-class))
@@ -45,7 +46,7 @@
 
 (defn s-packet-reader
   "Runnable that read packets from executed command and parses it."
-  [pfdata pflastpk]
+  [config pfdata pflastpk]
   (let [command     (-> (executor/cfg) :cmd)
         proc        (run-command command)
         reader      (io/reader (.getInputStream proc))
@@ -60,7 +61,7 @@
 
 (defn s-speed-calculator
   "Runnable that calculate speed over time of captured packets."
-  [pfdata pfspeed]
+  [config pfdata pfspeed]
   (let [calcfn (fn []
                  (doseq [[host data] (seq (deref pfdata))]
                    (dosync
@@ -72,29 +73,30 @@
                        (alter pfspeed assoc-in [host :out] (:out data))))))]
     (executor/run-interval calcfn 1000)))
 
-(defrecord PacketFilter [data speed lastpk]
-  Lifecycle
+(defrecord PacketFilter
+  [reader-thread speedc-thread data speed lastpk]
 
-  (init [_ system] system
-    (let [t-packet-reader     (thread (s-packet-reader data lastpk))
-          t-speed-calculator  (thread (s-speed-calculator data speed))]
-      (.setDaemon t-packet-reader false)
-      (.setDaemon t-speed-calculator false)
-      (-> system
-          (assoc ::pf-reader-thread t-packet-reader)
-          (assoc ::pf-speedc-thread t-speed-calculator))))
+  IComponentLifecycle
+
+  (init [this system]
+    (assoc system :pf this))
 
   (start [_ system]
-    (.start (::pf-reader-thread system))
-    (.start (::pf-speedc-thread system))
-    (-> system
-        (assoc ::pf-data data)
-        (assoc ::pf-data-last lastpk)))
+    (.start reader-thread)
+    (.start speedc-thread)
+    system)
 
   (stop [_ system]
-    (.interrupt (::pf-reader-thread system))
-    (.interrupt (::pf-speedc-thread system))
+    (.interrupt reader-thread)
+    (.interrupt speedc-thread)
     system))
 
-(defn packet-filter []
-  (->PacketFilter (ref {}) (ref {}) (agent {})))
+(defn packet-filter
+  [config]
+  (let [pfdata        (ref {})
+        pfspeed       (ref {})
+        pflastpk      (agent {})
+        reader-thread (executor/thread (s-packet-reader config pfdata pflastpk))
+        speedc-thread (executor/thread (s-speed-calculator config pfdata pfspeed))]
+    (->PacketFilter reader-thread speedc-thread
+                    pfdata pfspeed pflastpk)))
