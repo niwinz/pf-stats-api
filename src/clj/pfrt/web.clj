@@ -14,7 +14,7 @@
 
   (start [this system]
     (let [port    (get-in system [:config :port] 9090)
-          stopfn  (hkit/run-server #'app {:port port})]
+          stopfn  (hkit/run-server app {:port port})]
       (swap! webserver (fn [_] stopfn))
       (println (format "Listening: http://localhost:%s/" port))
       system))
@@ -26,9 +26,7 @@
 
 (defn web-server
   [config pf]
-  (let [middleware  (fn [handler]
-                      (fn [request]
-                        (handler (assoc request :ctx {:pf pf}))))
-        app         (-> (handler/api app)
-                        (middleware))]
-    (->Web (atom nil) app)))
+  (let [wrap-context (fn [h]
+                       (fn [req]
+                         (h (assoc req :ctx {:pf pf}))))]
+    (->Web (atom nil) (handler/api (wrap-context app)))))

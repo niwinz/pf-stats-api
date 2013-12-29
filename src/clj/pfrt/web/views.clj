@@ -18,7 +18,6 @@
 
 (defn stats-stream
   [request]
-  (println request)
   (let [request-id  (random-uuid)
         headers     (merge cors-headers
                            {"content-type" "text/event-stream"
@@ -30,12 +29,10 @@
     (hkit/with-channel request channel
       (hkit/send! channel initialmsg false)
       (let [worker  (fn []
-                      (println ".")
                       (let [loopfn (fn []
-                                    (let [data (str "data: " (json-dumps @(:pfdata pfctx)) "\n\n")]
+                                    (let [data (str "data: " (json-dumps @(:data pfctx)) "\n\n")]
                                       (hkit/send! channel data false)))]
-                        (executor/run-interval loopfn 1000)
-                        (println "CLOSE")))
+                        (executor/run-interval loopfn 1000)))
             thread  (Thread. worker)]
         (hkit/on-close channel (fn [& args]
                                  (.interrupt thread)))
