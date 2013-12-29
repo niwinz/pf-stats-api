@@ -23,8 +23,8 @@
   :target-path "target/%s"
   :source-paths ["src/clj" "src/cljs"]
   :plugins [[lein-cljsbuild "1.0.1"]]
-  :hooks [leiningen.cljsbuild]
-  :profiles {:uberjar {:aot :all}}
+  :profiles {:uberjar {:aot :all
+                       :hooks [leiningen.cljsbuild]}}
   :cljsbuild {
     :builds [{
         :source-paths ["src/cljs"]
