@@ -1,41 +1,41 @@
 (ns pfrt.main
   (:require [pfrt.pf :refer [packet-filter]]
             [pfrt.web :refer [web-server]]
-            [pfrt.core :refer [->System]]
+            [pfrt.core.app :as app]
             [pfrt.settings :as settings])
   (:gen-class))
 
 ;; Global var, only used for store
-;; a global system instance when this is
+;; a global app instance when this is
 ;; used from REPL.
-(def system nil)
+(def main-app nil)
 
 ;; System private constructor with
 ;; clear and explicit dependency injection
-;; on each system components.
-(defn- make-system []
+;; on each app components.
+(defn- make-app []
   (let [config    (settings/cfg)
         pf        (packet-filter config)
         webserver (web-server config pf)]
-    (-> (->System [pf web-server])
+    (-> (app/->App [pf webserver])
         (assoc :config config)
-        (init))))
+        (app/init))))
 
 ;; Start function that should
 ;; only be used from REPL.
 (defn start []
-  (alter-var-root #'system
-    (constantly (make-system)))
-  (start system))
+  (alter-var-root #'main-app
+    (constantly (make-app)))
+  (start main-app))
 
 ;; Stop function that should
 ;; only be used from REPL.
-(def stop []
-  (stop system))
+(defn stop []
+  (app/stop main-app))
 
 ;; Main entry point
 (defn -main
   [& args]
-  (let [system (make-system)]
-    (start system)
-    (println "System started")))
+  (let [app-instance (make-app)]
+    (app/start app-instance)
+    (println "Application started.")))
