@@ -1,16 +1,39 @@
 (ns pfrt.main
-  (:require [pfrt.packetfilter :as pf]
-            [pfrt.web :as web]
-            [pfrt.util :as util]
-            [pfrt.service :as service])
+  (:require [pfrt.pf :refer [packet-filter]]
+            [pfrt.core :refer [->System]]
+            [pfrt.settings :as settings])
   (:gen-class))
 
+;; Global var, only used for store
+;; a global system instance when this is
+;; used from REPL.
+(def system nil)
+
+;; System private constructor with
+;; clear and explicit dependency injection
+;; on each system components.
+(defn- make-system []
+  (let [config  (settings/cfg)
+        pf      (packet-filter config)]
+    (-> (->System [pf])
+        (assoc :config config)
+        (init))))
+
+;; Start function that should
+;; only be used from REPL.
+(defn start []
+  (alter-var-root #'system
+    (constantly (make-system)))
+  (start system))
+
+;; Stop function that should
+;; only be used from REPL.
+(def stop []
+  (stop system))
+
+;; Main entry point
 (defn -main
   [& args]
-  ;; Packet Filter Service Threads
-  (service/start-service pf/s-speed-calculator)
-  (service/start-service pf/s-packet-reader)
-  ;; Start main process threads
-  ;; (dk/start-ducksboard)
-  ;;
-  (service/start-service web/s-web :join true))
+  (let [system (make-system)]
+    (start system)
+    (println "System started")))
