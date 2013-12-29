@@ -1,5 +1,6 @@
 (ns pfrt.main
   (:require [pfrt.pf :refer [packet-filter]]
+            [pfrt.web :refer [web-server]]
             [pfrt.core :refer [->System]]
             [pfrt.settings :as settings])
   (:gen-class))
@@ -13,9 +14,10 @@
 ;; clear and explicit dependency injection
 ;; on each system components.
 (defn- make-system []
-  (let [config  (settings/cfg)
-        pf      (packet-filter config)]
-    (-> (->System [pf])
+  (let [config    (settings/cfg)
+        pf        (packet-filter config)
+        webserver (web-server config pf)]
+    (-> (->System [pf web-server])
         (assoc :config config)
         (init))))
 
