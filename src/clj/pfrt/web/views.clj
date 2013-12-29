@@ -1,10 +1,8 @@
 (ns pfrt.web.views
   (:require [clojure.java.io :as io]
             [org.httpkit.server :as hkit]
-            [org.httpkit.timer :as htimer]
-            [pfrt.packetfilter :as pf]
             [pfrt.util :as util]
-            [pfrt.service :as service]
+            [pfrt.executor :as executor]
             [pfrt.web.core :refer [render-json render-html cors-headers]])
   (:gen-class))
 
@@ -12,10 +10,10 @@
   [request]
   (render-html (slurp (io/resource "index.html"))))
 
-;; FIXME
 (defn stats
   [request]
-  (render-json @pf/hosts-data))
+  (let [pfctx (-> request :ctx :pf)]
+    (render-json @(:pfdata pfctx))))
 
 (defn stats-stream
   [request]
@@ -26,15 +24,16 @@
                             "cache-control" "no-cache"})
         initialmsg  {:headers headers
                      :body "event: message\n"
-                     :status 200}]
+                     :status 200}
+        pfctx       (-> request :ctx :pf)]
     (hkit/with-channel request channel
       (hkit/send! channel initialmsg false)
       (let [worker  (fn []
                       (println ".")
                       (let [loopfn (fn []
-                                    (let [data (str "data: " (util/json-dumps @pf/hosts-data) "\n\n")]
+                                    (let [data (str "data: " (util/json-dumps @(:pfdata pfctx)) "\n\n")]
                                       (hkit/send! channel data false)))]
-                        (service/run-interval loopfn 1000)
+                        (executor/run-interval loopfn 1000)
                         (println "CLOSE")))
             thread  (Thread. worker)]
         (hkit/on-close channel (fn [& args]
