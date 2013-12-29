@@ -33,6 +33,12 @@
 (defn stop []
   (app/stop main-app))
 
+;; Helper function that executes
+;; stop and start.
+(defn restart []
+  (start)
+  (stop))
+
 ;; Main entry point
 (defn -main
   [& args]
