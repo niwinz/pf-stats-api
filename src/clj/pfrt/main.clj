@@ -3,6 +3,7 @@
             [pfrt.web :refer [web-server]]
             [pfrt.core.app :as app]
             [pfrt.settings :as settings])
+  (:use clojure.tools.namespace.repl)
   (:gen-class))
 
 ;; Global var, only used for store
@@ -13,20 +14,20 @@
 ;; System private constructor with
 ;; clear and explicit dependency injection
 ;; on each app components.
-(defn- make-app []
+(defn- make-app
+  []
   (let [config    (settings/cfg)
         pf        (packet-filter config)
         webserver (web-server config pf)]
     (-> (app/->App [pf webserver])
-        (assoc :config config)
         (app/init))))
 
 ;; Start function that should
 ;; only be used from REPL.
-(defn start []
-  (alter-var-root #'main-app
-    (constantly (make-app)))
-  (start main-app))
+(defn start
+  []
+  (alter-var-root #'main-app (constantly (make-app)))
+  (app/start main-app))
 
 ;; Stop function that should
 ;; only be used from REPL.
@@ -36,8 +37,8 @@
 ;; Helper function that executes
 ;; stop and start.
 (defn restart []
-  (start)
-  (stop))
+  (stop)
+  (refresh :after 'pfrt.main/start))
 
 ;; Main entry point
 (defn -main
