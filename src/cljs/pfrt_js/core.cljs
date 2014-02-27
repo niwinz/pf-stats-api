@@ -24,11 +24,11 @@
         download-speed  (:speed-in data)
         upload-speed    (:speed-out data)]
     (crate/html [:tr {:id (host->id host)}
-           [:td (:name data)]
-           [:td (js/filesize downloaded)]
-           [:td (js/filesize uploaded)]
-           [:td (str (js/filesize download-speed) "/s")]
-           [:td (str (js/filesize upload-speed) "/s")]])))
+                 [:td (:name data)]
+                 [:td (js/filesize downloaded)]
+                 [:td (js/filesize uploaded)]
+                 [:td (str (js/filesize download-speed) "/s")]
+                 [:td (str (js/filesize upload-speed) "/s")]])))
 
 (defn- render
   "Render all matrix."
@@ -38,7 +38,7 @@
                         (let [data (into {} (second it))]
                           (get data "in")))
         stats         (reverse
-                        (sort-by sortfn (into [] stats)))]
+                       (sort-by sortfn (into [] stats)))]
     (doseq [[host data] stats]
       (append temporal-node (render-host-element host data)))
     temporal-node))
