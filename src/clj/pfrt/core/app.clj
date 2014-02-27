@@ -2,13 +2,13 @@
   (:require [pfrt.core.lifecycle :as lifecycle])
   (:require [swiss.arrows :refer [-<>]]))
 
-(defprotocol IApp
+(defprotocol Application
   (init [_] "Initialize method")
   (start [_] "Start service")
   (stop [_] "Stop service"))
 
 (defrecord App [components]
-  IApp
+  Application
   (init [this]
     (-<> this (reduce #(lifecycle/init %2 %1) <> components)))
   (start [this]
