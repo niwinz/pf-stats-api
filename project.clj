@@ -3,13 +3,17 @@
   :url "http://example.com/FIXME"
   :license {:name "Apache 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0.txt"}
-  :dependencies [[org.clojure/clojure "1.5.1"]
-                 [http-kit "2.1.12"]
+  :dependencies [[org.clojure/clojure "1.6.0-beta1"]
+                 [http-kit "2.1.16"]
                  [compojure "1.1.6"]
                  [org.clojure/data.json "0.2.3"]
-                 [ring/ring-jetty-adapter "1.2.1"]
-                 ;; [hiccup "1.0.4"]
-                 ;; [be.niwi/clj.jdbc "0.1.0-beta4"]
+                 [org.clojure/tools.namespace "0.2.4"]
+
+                 ;; Jetty9 + Explict Servlet Api Version
+                 [info.sunng/ring-jetty9-adapter "0.5.0"]
+                 [javax.servlet/javax.servlet-api "3.1.0"]
+
+                 ;; Other utils
                  [org.clojure/algo.monads "0.1.4"]
                  [jarohen/nomad "0.6.0"]
                  [swiss-arrows "1.0.0"]
