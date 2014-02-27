@@ -21,7 +21,7 @@
 
   (stop [_ system]
     (let [stopfn (deref webserver)]
-      (@stopfn)
+      (stopfn)
       system)))
 
 (defn web-server
