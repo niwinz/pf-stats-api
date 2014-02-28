@@ -1,57 +1,46 @@
 (ns pfrt-js.core
-  (:use [purnam.cljs :only [aget-in aset-in]]           ;; required import (dependency)
-        [jayq.util :only [log]]                         ;; console.log wrapper
-        [jayq.core :only [$ html replace-with append]]) ;; dom manipulation
-  (:require [clojure.data :refer [diff]]
-            [clojure.string :as str]
-            [purnam.types :as types]                    ;; extend js types with ISequable
-            [crate.core :as crate]))                    ;; templating
+  (:require [pfrt-js.templates :as tmpl]
+            [pfrt-js.eventsource :as evs]
+            [domina :refer [log html set-html! append! by-class 
+                            html-to-dom swap-content!]]
+            [domina.css :refer [sel]]))
 
-(def *remote-url* "/stream/stats")
-(def *items* (atom {}))
+(def ^:static ^:private
+  *remote-url* "/stream/stats")
 
-(defn- host->id
-  "Convert host name to valid
-  dom identifier."
-  [host]
-  (str "host" (str/join (str/split host #"\."))))
-
-(defn- render-host-element
-  "Render one element."
-  [host data]
-  (let [downloaded      (:in data)
-        uploaded        (:out data)
-        download-speed  (:speed-in data)
-        upload-speed    (:speed-out data)]
-    (crate/html [:tr {:id (host->id host)}
-                 [:td (:name data)]
-                 [:td (js/filesize downloaded)]
-                 [:td (js/filesize uploaded)]
-                 [:td (str (js/filesize download-speed) "/s")]
-                 [:td (str (js/filesize upload-speed) "/s")]])))
-
-(defn- render
-  "Render all matrix."
+(defn- render-stats!
   [stats]
-  (let [temporal-node ($ "<tbody />")
-        sortfn        (fn [it]
-                        (let [data (into {} (second it))]
-                          (get data "in")))
-        stats         (reverse
-                       (sort-by sortfn (into [] stats)))]
+  (let [el (html-to-dom "<tbody />")]
     (doseq [[host data] stats]
-      (append temporal-node (render-host-element host data)))
-    temporal-node))
+      (append! el (tmpl/host-entry host data)))
+    (swap-content! (sel "tbody") el)))
 
-(defn- main
+(defn- render-layouts!
+  "Render main layouts into DOM"
   []
-  (let [event-source  (js/EventSource. *remote-url*)
-        on-receive    (fn [e]
-                        (let [dom-tbody ($ ".stats-container tbody")
-                              data      (.parse js/JSON (.-data e))]
-                          (replace-with dom-tbody (render data))))
-        on-error      (fn [e]
-                        (log "error" e))]
-    (.addEventListener event-source "message" on-receive)))
+  (set-html! (sel "body") (tmpl/base-layout))
+  (set-html! (by-class "body-container") (tmpl/stats-layout)))
 
-(main)
+(defn- json->edn
+  [data]
+  (js->clj (.parse js/JSON data)))
+
+(defn- sort-by-fn
+  [attrname entry]
+  (let [data (into {} (second entry))]
+    (get data attrname)))
+
+(def ^:private sort-by-downloaded (partial sort-by-fn "in"))
+(def ^:private sort-by-upload (partial sort-by-fn "out"))
+
+(defn ^:export main
+  "Main entry point"
+  []
+  (let [sortfn (atom sort-by-downloaded)]
+    (render-layouts!)
+    ;; Set initial layouts
+    (let [es (evs/event-source *remote-url*)]
+      (evs/listen! es "message" (fn [event]
+                                  (let [data   (json->edn (.-data event))
+                                        sorted (reverse (sort-by @sortfn data))]
+                                    (render-stats! data)))))))

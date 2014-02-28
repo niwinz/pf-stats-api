@@ -20,9 +20,8 @@
 
                  ;; ClojureScript Dependencies
                  [org.clojure/clojurescript "0.0-2127"]
-                 [im.chit/purnam "0.1.8"]
-                 [crate "0.2.5"]
-                 [jayq "2.5.0"]]
+                 [domina "1.0.3-SNAPSHOT"]
+                 [crate "0.2.5"]]
   :main ^:skip-aot pfrt.main
   :target-path "target/%s"
   :source-paths ["src/clj" "src/cljs"]

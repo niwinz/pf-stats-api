@@ -10,3 +10,5 @@ pom.xml.asc
 pflog.txt
 *.swp
 resources/public/js/main.js
+*~
+\#*\#
