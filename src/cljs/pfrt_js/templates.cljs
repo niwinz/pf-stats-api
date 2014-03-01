@@ -11,10 +11,10 @@
 
 (defn host-entry
   [host data]
-  (let [downloaded      (:in data)
-        uploaded        (:out data)
-        download-speed  (:speed-in data)
-        upload-speed    (:speed-out data)]
+  (let [downloaded      (get data "in")
+        uploaded        (get data "out")
+        download-speed  (get data "speed-in")
+        upload-speed    (get data "speed-out")]
     (html [:tr {:id (hostname->domid host)}
            [:td (:name data host)]
            [:td (js/filesize downloaded)]
