@@ -11,16 +11,13 @@
 
 (defn host-entry
   [host data]
-  (let [downloaded      (get data "in")
-        uploaded        (get data "out")
-        download-speed  (get data "speed-in")
-        upload-speed    (get data "speed-out")]
+  (let [{:strs [in out speed-in speed-out]} data]
     (html [:tr {:id (hostname->domid host)}
-           [:td (:name data host)]
-           [:td (js/filesize downloaded)]
-           [:td (js/filesize uploaded)]
-           [:td (str (js/filesize download-speed) "/s")]
-           [:td (str (js/filesize upload-speed) "/s")]])))
+           [:td host]
+           [:td (js/filesize in)]
+           [:td (js/filesize out)]
+           [:td (str (js/filesize speed-in) "/s")]
+           [:td (str (js/filesize speed-out) "/s")]])))
 
 (defn stats-layout
   []
